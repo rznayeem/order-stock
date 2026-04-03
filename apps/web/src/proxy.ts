@@ -6,8 +6,10 @@ export default async function proxy(request: NextRequest) {
   const isAuthPage = path.startsWith('/auth');
   const isDashboardPage = path.startsWith('/dashboard');
 
-  // Simple check for the cookie. Better auth verify is on the client/components.
-  const hasSession = request.cookies.has("order_stock_session");
+  // Check for the session token cookie set by Better Auth
+  const hasSession = 
+    request.cookies.has("order_stock.session_token") || 
+    request.cookies.has("__Secure-order_stock.session_token");
 
   if (isAuthPage && hasSession) {
     return NextResponse.redirect(new URL("/dashboard", request.url));

@@ -7,8 +7,7 @@ import { useProducts } from "@/react-query/products/product-queries";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useAppMutation } from "@/hooks/useAppMutation";
 import axiosInstance from "@/lib/axios";
-import { motion, AnimatePresence } from "motion/react";
-import { Plus, Search, Eye, ShoppingCart, MoreHorizontal, User, DollarSign, CreditCard } from "lucide-react";
+import { Plus, Search, Eye, ShoppingCart, MoreHorizontal, User, DollarSign, CreditCard, CalendarIcon, X } from "lucide-react";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@repo/ui/components/table";
@@ -37,6 +36,8 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@repo/ui/components/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@repo/ui/components/popover";
+import { Calendar } from "@repo/ui/components/calendar";
 import { OrderForm } from "@/components/orders/OrderForm";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { format } from "date-fns";
@@ -48,13 +49,21 @@ export default function OrdersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 500);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
+  const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   const [page, setPage] = useState(1);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [viewingOrder, setViewingOrder] = useState<any>(null);
   const [statusChange, setStatusChange] = useState<{ id: string; status: string } | null>(null);
 
   const { data: ordersData, isLoading } = useOrders({
-    userId, search: debouncedSearch, status: statusFilter, page, limit: 10
+    userId,
+    search: debouncedSearch,
+    status: statusFilter,
+    dateFrom: dateFrom ? format(dateFrom, "yyyy-MM-dd") : undefined,
+    dateTo: dateTo ? format(dateTo, "yyyy-MM-dd") : undefined,
+    page,
+    limit: 10,
   });
 
   const { data: allProducts } = useProducts({ userId, limit: 1000 });
@@ -70,6 +79,11 @@ export default function OrdersPage() {
       updateStatusMutation.mutate(statusChange);
       setStatusChange(null);
     }
+  };
+
+  const clearDateFilters = () => {
+    setDateFrom(undefined);
+    setDateTo(undefined);
   };
 
   const getStatusBadge = (status: string) => {
@@ -97,7 +111,7 @@ export default function OrdersPage() {
       </div>
 
       <div className="flex flex-col md:flex-row gap-3 items-center justify-between bg-muted/30 p-3 rounded-xl border border-muted/60">
-        <div className="relative w-full md:w-80">
+        <div className="relative w-full md:w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
             placeholder="Filter orders or customers..." 
@@ -106,9 +120,9 @@ export default function OrdersPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <div className="flex items-center gap-2 w-full md:w-auto">
+        <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="h-9 w-[150px] rounded-lg bg-background border-muted/60 text-xs">
+            <SelectTrigger className="h-9 w-[140px] rounded-lg bg-background border-muted/60 text-xs">
               <SelectValue placeholder="All Statuses" />
             </SelectTrigger>
             <SelectContent>
@@ -120,6 +134,48 @@ export default function OrdersPage() {
               <SelectItem value="CANCELLED">Cancelled</SelectItem>
             </SelectContent>
           </Select>
+
+          {/* Date From Picker */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="h-9 rounded-lg bg-background border-muted/60 text-xs font-normal w-[130px] justify-start">
+                <CalendarIcon className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+                {dateFrom ? format(dateFrom, "MMM d, yyyy") : "From date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateFrom}
+                onSelect={setDateFrom}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+
+          {/* Date To Picker */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="h-9 rounded-lg bg-background border-muted/60 text-xs font-normal w-[130px] justify-start">
+                <CalendarIcon className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+                {dateTo ? format(dateTo, "MMM d, yyyy") : "To date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateTo}
+                onSelect={setDateTo}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+
+          {(dateFrom || dateTo) && (
+            <Button variant="ghost" size="sm" onClick={clearDateFilters} className="h-9 text-xs text-muted-foreground hover:text-foreground px-2">
+              <X className="h-3.5 w-3.5 mr-1" /> Clear dates
+            </Button>
+          )}
         </div>
       </div>
 
@@ -197,9 +253,17 @@ export default function OrdersPage() {
                         <DropdownMenuItem className="text-xs cursor-pointer" onClick={() => setViewingOrder(order)}>
                           <Eye className="mr-2 h-3.5 w-3.5" /> View Details
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-xs cursor-pointer" disabled>
-                          <CreditCard className="mr-2 h-3.5 w-3.5" /> Print Invoice
-                        </DropdownMenuItem>
+                        {order.status !== "DELIVERED" && order.status !== "CANCELLED" && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              className="text-xs cursor-pointer text-destructive focus:text-destructive"
+                              onClick={() => setStatusChange({ id: order.id, status: "CANCELLED" })}
+                            >
+                              <X className="mr-2 h-3.5 w-3.5" /> Cancel Order
+                            </DropdownMenuItem>
+                          </>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

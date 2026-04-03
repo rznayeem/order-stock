@@ -5,6 +5,7 @@ import { OrderRoutes } from "../modules/Order/order.route";
 import { RestockRoutes } from "../modules/RestockQueue/restock.route";
 import { DashboardRoutes } from "../modules/Dashboard/dashboard.route";
 import { ActivityRoutes } from "../modules/ActivityLog/activity.route";
+import { UserRoutes } from "../modules/User/user.route";
 
 const router: Router = Router();
 
@@ -15,6 +16,7 @@ const moduleRoutes = [
   { path: "/restock-queue", route: RestockRoutes },
   { path: "/dashboard", route: DashboardRoutes },
   { path: "/activity-logs", route: ActivityRoutes },
+  { path: "/users", route: UserRoutes },
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

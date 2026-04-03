@@ -7,11 +7,16 @@ import { Label } from "@repo/ui/components/label";
 import { Separator } from "@repo/ui/components/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/avatar";
 import { motion } from "motion/react";
-import { useRouter } from "next/navigation";
+import { useRouter, redirect } from "next/navigation";
 
 export default function SettingsPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  
+  const userRole = (session?.user as any)?.role || "USER";
+  if (userRole !== "ADMIN") {
+    redirect("/dashboard");
+  }
 
   const handleLogout = async () => {
     await signOut();

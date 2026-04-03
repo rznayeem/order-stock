@@ -9,9 +9,17 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 
+import { redirect } from "next/navigation";
+
 export default function ActivityLogPage() {
   const { data: session } = useSession();
   const userId = session?.user?.id;
+  const userRole = (session?.user as any)?.role || "USER";
+  
+  if (userRole !== "ADMIN" && userRole !== "MANAGER") {
+    redirect("/dashboard");
+  }
+
   const { data: logs, isLoading } = useActivityLogs(userId, 50);
 
   const getLogIcon = (type: string) => {

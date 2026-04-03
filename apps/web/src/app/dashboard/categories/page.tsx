@@ -25,9 +25,17 @@ import { Badge } from "@repo/ui/components/badge";
 import { format } from "date-fns";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 
+import { redirect } from "next/navigation";
+
 export default function CategoriesPage() {
   const { data: session } = useSession();
   const userId = session?.user?.id;
+  const userRole = (session?.user as any)?.role || "USER";
+  
+  if (userRole !== "ADMIN" && userRole !== "MANAGER") {
+    redirect("/dashboard");
+  }
+
   const { data: categories, isLoading } = useCategories(userId);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);

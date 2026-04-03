@@ -9,6 +9,7 @@ import { useAppMutation } from "@/hooks/useAppMutation";
 import axiosInstance from "@/lib/axios";
 import { motion, AnimatePresence } from "motion/react";
 import { Plus, Trash2, Edit, Search, AlertCircle, Package, MoreHorizontal, Filter } from "lucide-react";
+import { redirect } from "next/navigation";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@repo/ui/components/table";
@@ -36,6 +37,11 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 export default function ProductsPage() {
   const { data: session } = useSession();
   const userId = session?.user?.id;
+  const userRole = (session?.user as any)?.role || "USER";
+  
+  if (userRole !== "ADMIN" && userRole !== "MANAGER") {
+    redirect("/dashboard");
+  }
   
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 500);

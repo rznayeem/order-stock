@@ -28,6 +28,7 @@ export interface NavItem {
   href: string
   icon?: LucideIcon
   isActive?: boolean
+  roles?: string[]
   items?: {
     title: string
     href: string
@@ -39,9 +40,18 @@ export interface NavGroupProps {
   items: NavItem[]
 }
 
+import { useSession } from "@/lib/auth-client"
+
 export function NavGroup({ title, items }: NavGroupProps) {
   const { state } = useSidebar()
   const pathname = usePathname()
+  const { data: session } = useSession()
+  const userRole = (session?.user as any)?.role || "USER"
+
+  const filteredItems = items.filter(item => {
+    if (!item.roles) return true; // accessible by all
+    return item.roles.includes(userRole);
+  });
 
   return (
     <SidebarGroup>
@@ -49,7 +59,7 @@ export function NavGroup({ title, items }: NavGroupProps) {
         <SidebarGroupLabel>{title}</SidebarGroupLabel>
       )}
       <SidebarMenu>
-        {items.map((item) => {
+        {filteredItems.map((item) => {
           const isParentActive = pathname.startsWith(item.href)
           
           if (!item.items?.length) {

@@ -4,12 +4,12 @@ import { useSession } from "@/lib/auth-client";
 import { useDashboardStats } from "@/react-query/dashboard/dashboard-queries";
 import { StatsCard } from "./StatsCard";
 import { Skeleton } from "@repo/ui/components/skeleton";
-import { Package, ShoppingCart, TrendingUp, AlertTriangle, Activity, DollarSign, Users, CreditCard } from "lucide-react";
+import { Package, ShoppingCart, TrendingUp, AlertTriangle, Activity, DollarSign, Clock, CheckCircle, XCircle, RotateCcw } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@repo/ui/components/card";
 import { Badge } from "@repo/ui/components/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/ui/components/tabs";
-import { motion } from "motion/react";
 import { format } from "date-fns";
+import { useRouter } from "next/navigation";
 import { 
   Area, 
   AreaChart, 
@@ -34,6 +34,7 @@ const chartConfig = {
 export function DashboardContent() {
   const { data: session } = useSession();
   const { data: stats, isLoading } = useDashboardStats(session?.user?.id);
+  const router = useRouter();
 
   if (isLoading || !stats) {
     return (
@@ -77,38 +78,72 @@ export function DashboardContent() {
         </TabsList>
         
         <TabsContent value="overview" className="space-y-4">
+          {/* Primary Stats Row */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatsCard
               title="Total Revenue"
               value={`$${stats.revenueToday.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
               icon={<DollarSign className="h-4 w-4" />}
-              trend={{ value: "+12.5%", label: "from yesterday", positive: true }}
+              description={`$${stats.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })} all-time`}
               delay={0.1}
             />
             <StatsCard
-              title="Orders"
+              title="Orders Today"
               value={stats.totalOrdersToday.toString()}
               icon={<ShoppingCart className="h-4 w-4" />}
-              trend={{ value: "+5.2%", label: "from yesterday", positive: true }}
+              description={`${stats.pendingOrders + stats.completedOrders + stats.cancelledOrders} total orders`}
               delay={0.2}
             />
             <StatsCard
-              title="Low Stock"
+              title="Pending Orders"
+              value={stats.pendingOrders.toString()}
+              icon={<Clock className="h-4 w-4" />}
+              description={stats.pendingOrders > 0 ? "Awaiting processing" : "No pending orders"}
+              delay={0.3}
+            />
+            <StatsCard
+              title="Completed Orders"
+              value={stats.completedOrders.toString()}
+              icon={<CheckCircle className="h-4 w-4" />}
+              description={`${stats.cancelledOrders} cancelled`}
+              delay={0.4}
+            />
+          </div>
+
+          {/* Secondary Stats Row */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <StatsCard
+              title="Low Stock Items"
               value={stats.lowStockCount.toString()}
               icon={<AlertTriangle className="h-4 w-4" />}
               description={stats.lowStockCount > 0 ? "Items require restock" : "All items in stock"}
-              delay={0.3}
+              delay={0.5}
             />
             <StatsCard
               title="Active Products"
               value={stats.totalProducts.toString()}
               icon={<Package className="h-4 w-4" />}
               description={`Across ${stats.totalCategories} categories`}
-              delay={0.4}
+              delay={0.6}
+            />
+            <StatsCard
+              title="Restock Queue"
+              value={stats.restockQueueCount.toString()}
+              icon={<RotateCcw className="h-4 w-4" />}
+              description={stats.restockQueueCount > 0 ? "Items need restocking" : "Queue is clear"}
+              delay={0.7}
+            />
+            <StatsCard
+              title="All-Time Revenue"
+              value={`$${stats.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+              icon={<TrendingUp className="h-4 w-4" />}
+              description="Total non-cancelled revenue"
+              delay={0.8}
             />
           </div>
 
           <div className="grid gap-4 lg:grid-cols-7">
+            {/* Revenue Chart */}
             <Card className="lg:col-span-4 shadow-sm border-muted/60">
               <CardHeader>
                 <CardTitle className="text-base font-semibold">Revenue Overview</CardTitle>
@@ -153,6 +188,7 @@ export function DashboardContent() {
               </CardContent>
             </Card>
 
+            {/* Recent Sales */}
             <Card className="lg:col-span-3 shadow-sm border-muted/60">
               <CardHeader>
                 <CardTitle className="text-base font-semibold">Recent Sales</CardTitle>
@@ -172,11 +208,16 @@ export function DashboardContent() {
                         </div>
                         <div className="flex-1 space-y-1">
                           <p className="text-sm font-medium leading-none">{order.customerName}</p>
-                          <p className="text-xs text-muted-foreground">{order.customerEmail || 'Guest Customer'}</p>
+                          <p className="text-xs text-muted-foreground">Order #{order.orderNumber}</p>
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-bold tracking-tight">+${order.totalPrice.toFixed(2)}</p>
-                          <Badge variant="outline" className="text-[10px] h-4 mt-1 border-emerald-500/20 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400">
+                          <Badge variant="outline" className={`text-[10px] h-4 mt-1 border-none ${
+                            order.status === "DELIVERED" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
+                            order.status === "PENDING" ? "bg-amber-500/10 text-amber-600" :
+                            order.status === "CANCELLED" ? "bg-rose-500/10 text-rose-600" :
+                            "bg-blue-500/10 text-blue-600"
+                          }`}>
                             {order.status}
                           </Badge>
                         </div>
@@ -194,10 +235,16 @@ export function DashboardContent() {
                         </div>
                      </div>
                      <div className="mt-3 grid grid-cols-2 gap-2">
-                        <button className="flex items-center justify-start gap-2 rounded-lg bg-background p-2 text-xs font-medium border shadow-sm hover:bg-accent transition-colors">
+                        <button 
+                          onClick={() => router.push("/dashboard/products")}
+                          className="flex items-center justify-start gap-2 rounded-lg bg-background p-2 text-xs font-medium border shadow-sm hover:bg-accent transition-colors"
+                        >
                           <Package className="h-3.5 w-3.5" /> Add Product
                         </button>
-                        <button className="flex items-center justify-start gap-2 rounded-lg bg-background p-2 text-xs font-medium border shadow-sm hover:bg-accent transition-colors">
+                        <button 
+                          onClick={() => router.push("/dashboard/orders")}
+                          className="flex items-center justify-start gap-2 rounded-lg bg-background p-2 text-xs font-medium border shadow-sm hover:bg-accent transition-colors"
+                        >
                           <ShoppingCart className="h-3.5 w-3.5" /> New Order
                         </button>
                      </div>
@@ -206,6 +253,82 @@ export function DashboardContent() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Product Summary Section */}
+          <Card className="shadow-sm border-muted/60">
+            <CardHeader>
+              <CardTitle className="text-base font-semibold">Product Summary</CardTitle>
+              <CardDescription>Current stock levels across your inventory.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {stats.productSummary.length === 0 ? (
+                <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
+                  No products added yet. Add products to see their stock summary.
+                </div>
+              ) : (
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {stats.productSummary.map((product: any) => {
+                    const isLowStock = product.stockQuantity > 0 && product.stockQuantity <= product.minStockThreshold;
+                    const isOutOfStock = product.stockQuantity <= 0;
+                    const percentage = Math.min(100, (product.stockQuantity / Math.max(product.minStockThreshold * 3, 1)) * 100);
+
+                    return (
+                      <div
+                        key={product.id}
+                        className={`rounded-xl border p-4 transition-all hover:shadow-md ${
+                          isOutOfStock ? "border-rose-500/30 bg-rose-500/5" :
+                          isLowStock ? "border-amber-500/30 bg-amber-500/5" :
+                          "border-muted/60 bg-card"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold truncate">{product.name}</p>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">
+                              {product.category?.name || "Uncategorized"}
+                            </p>
+                          </div>
+                          <Badge 
+                            variant="outline"
+                            className={`text-[10px] h-5 border-none shrink-0 ${
+                              isOutOfStock ? "bg-rose-500/10 text-rose-600 dark:text-rose-400" :
+                              isLowStock ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" :
+                              "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                            }`}
+                          >
+                            {isOutOfStock ? "Out of Stock" : isLowStock ? "Low Stock" : "OK"}
+                          </Badge>
+                        </div>
+                        <div className="mt-3">
+                          <div className="flex items-baseline justify-between mb-1.5">
+                            <span className={`text-lg font-bold ${
+                              isOutOfStock ? "text-rose-600" : isLowStock ? "text-amber-600" : ""
+                            }`}>
+                              {product.stockQuantity}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              {isOutOfStock ? "0 available" : `${product.stockQuantity} available`}
+                            </span>
+                          </div>
+                          <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${
+                                isOutOfStock ? "bg-rose-500" : isLowStock ? "bg-amber-500" : "bg-emerald-500"
+                              }`}
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
+                          <p className="text-[10px] text-muted-foreground mt-1">
+                            Min threshold: {product.minStockThreshold}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

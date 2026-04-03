@@ -1,0 +1,94 @@
+
+> order-stock@ build D:\All Projects\order-stock
+> turbo run build
+
+• turbo 2.9.3
+
+   • Packages in scope: @repo/api, @repo/database, @repo/eslint-config, @repo/typescript-config, @repo/ui, @repo/web
+   • Running build in 6 packages
+   • Remote caching disabled
+
+@repo/database:generate: cache bypass, force executing bff53c721b668636
+@repo/database:build: cache miss, executing 766f3a23ccd316a4
+@repo/database:generate: 
+@repo/database:generate: > @repo/database@1.0.0 generate D:\All Projects\order-stock\packages\database
+@repo/database:generate: > prisma generate
+@repo/database:generate: 
+@repo/database:build: 
+@repo/database:build: > @repo/database@1.0.0 prebuild D:\All Projects\order-stock\packages\database
+@repo/database:build: > pnpm run generate
+@repo/database:build: 
+@repo/database:build: 
+@repo/database:build: > @repo/database@1.0.0 generate D:\All Projects\order-stock\packages\database
+@repo/database:build: > prisma generate
+@repo/database:build: 
+@repo/database:generate: ◇ injecting env (6) from ..\..\.env.local // tip: ⌘ override existing { override: true }
+@repo/database:generate: Loaded Prisma config from prisma.config.ts.
+@repo/database:generate: 
+@repo/database:generate: Prisma schema loaded from prisma.
+@repo/database:generate: 
+@repo/database:generate: ✔ Generated Prisma Client (7.6.0) to .\generated in 92ms
+@repo/database:generate: 
+@repo/database:build: ◇ injecting env (6) from ..\..\.env.local // tip: ◈ encrypted .env [www.dotenvx.com]
+@repo/database:build: Loaded Prisma config from prisma.config.ts.
+@repo/database:build: 
+@repo/database:build: Prisma schema loaded from prisma.
+@repo/database:build: 
+@repo/database:build: ✔ Generated Prisma Client (7.6.0) to .\generated in 80ms
+@repo/database:build: 
+@repo/database:build: 
+@repo/database:build: > @repo/database@1.0.0 build D:\All Projects\order-stock\packages\database
+@repo/database:build: > prisma generate
+@repo/database:build: 
+@repo/database:build: ◇ injecting env (6) from ..\..\.env.local // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+@repo/database:build: Loaded Prisma config from prisma.config.ts.
+@repo/database:build: 
+@repo/database:build: Prisma schema loaded from prisma.
+@repo/database:build: 
+@repo/database:build: ✔ Generated Prisma Client (7.6.0) to .\generated in 89ms
+@repo/database:build: 
+@repo/api:build: cache miss, executing 3e75dcb7b996b8e5
+@repo/web:build: cache miss, executing b12db249cdcdecce
+@repo/web:build: 
+@repo/web:build: > @repo/web@0.1.0 build D:\All Projects\order-stock\apps\web
+@repo/web:build: > next build
+@repo/web:build: 
+@repo/api:build: 
+@repo/api:build: > @repo/api@1.0.0 build D:\All Projects\order-stock\apps\api
+@repo/api:build: > tsc -p tsconfig.build.json
+@repo/api:build: 
+@repo/web:build: ▲ Next.js 16.1.1 (Turbopack)
+@repo/web:build: 
+@repo/web:build: ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+@repo/web:build:   Creating an optimized production build ...
+@repo/api:build: src/app/modules/Category/category.controller.ts(22,55): error TS2345: Argument of type 'string | string[]' is not assignable to parameter of type 'string'.
+@repo/api:build:   Type 'string[]' is not assignable to type 'string'.
+@repo/api:build: src/app/modules/Category/category.controller.ts(29,55): error TS2345: Argument of type 'string | string[]' is not assignable to parameter of type 'string'.
+@repo/api:build:   Type 'string[]' is not assignable to type 'string'.
+@repo/api:build: src/app/modules/Dashboard/dashboard.service.ts(19,74): error TS2339: Property 'raw' does not exist on type 'PrismaClient'.
+@repo/api:build: src/app/modules/Order/order.controller.ts(26,50): error TS2345: Argument of type 'string | string[]' is not assignable to parameter of type 'string'.
+@repo/api:build:   Type 'string[]' is not assignable to type 'string'.
+@repo/api:build: src/app/modules/Order/order.controller.ts(34,55): error TS2345: Argument of type 'string | string[]' is not assignable to parameter of type 'string'.
+@repo/api:build:   Type 'string[]' is not assignable to type 'string'.
+@repo/api:build: src/app/modules/Product/product.controller.ts(26,54): error TS2345: Argument of type 'string | string[]' is not assignable to parameter of type 'string'.
+@repo/api:build:   Type 'string[]' is not assignable to type 'string'.
+@repo/api:build: src/app/modules/Product/product.controller.ts(33,53): error TS2345: Argument of type 'string | string[]' is not assignable to parameter of type 'string'.
+@repo/api:build:   Type 'string[]' is not assignable to type 'string'.
+@repo/api:build: src/app/modules/Product/product.controller.ts(40,53): error TS2345: Argument of type 'string | string[]' is not assignable to parameter of type 'string'.
+@repo/api:build:   Type 'string[]' is not assignable to type 'string'.
+@repo/api:build: src/app/modules/Product/product.controller.ts(48,54): error TS2345: Argument of type 'string | string[]' is not assignable to parameter of type 'string'.
+@repo/api:build:   Type 'string[]' is not assignable to type 'string'.
+@repo/api:build: src/app/modules/RestockQueue/restock.controller.ts(17,55): error TS2345: Argument of type 'string | string[]' is not assignable to parameter of type 'string'.
+@repo/api:build:   Type 'string[]' is not assignable to type 'string'.
+@repo/api:build: ../../packages/database/src/config.ts(1,12): error TS2304: Cannot find name 'window'.
+@repo/api:build:  ELIFECYCLE  Command failed with exit code 2.
+ ERROR  @repo/api#build: command (D:\All Projects\order-stock\apps\api) C:\Users\Nayeem\AppData\Local\pnpm\.tools\pnpm\9.0.0\bin\pnpm.CMD run build exited (2)
+
+ Tasks:    2 successful, 4 total
+Cached:    0 cached, 4 total
+  Time:    6.158s 
+Failed:    @repo/api#build
+
+ WARNING  no output files found for task @repo/database#build. Please check your `outputs` key in `turbo.json`
+ ERROR  run failed: command  exited (2)
+ ELIFECYCLE  Command failed with exit code 2.

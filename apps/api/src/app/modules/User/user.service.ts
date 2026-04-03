@@ -1,4 +1,6 @@
 import { prisma, Prisma } from "@repo/database";
+import { hashPassword } from "better-auth/crypto";
+import { randomBytes } from "crypto";
 
 const getUsers = async (query: { search?: string; role?: string; page?: number; limit?: number }) => {
   const { search, role, page = 1, limit = 10 } = query;
@@ -49,8 +51,51 @@ const updateUserRole = async (userId: string, currentUserId: string, newRole: st
     where: { id: userId },
     data: { role: newRole as any },
   });
-
   return updatedUser;
 };
 
-export const UserService = { getUsers, updateUserRole };
+const createUser = async (currentUserId: string, userData: any) => {
+  // Verify current user is admin
+  const currentUser = await prisma.user.findUnique({ where: { id: currentUserId } });
+  if (!currentUser || currentUser.role !== "ADMIN") {
+    throw new Error("Unauthorized: Only admins can create users");
+  }
+
+  const existingUser = await prisma.user.findUnique({ where: { email: userData.email } });
+  if (existingUser) {
+    throw new Error("User with this email already exists");
+  }
+
+  const userId = `user-${randomBytes(8).toString("hex")}`;
+  
+  // Create User
+  const newUser = await prisma.user.create({
+    data: {
+      id: userId,
+      name: userData.name,
+      email: userData.email,
+      emailVerified: true,
+      role: userData.role || "USER",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  // Create Account
+  const hashedPass = await hashPassword(userData.password);
+  await prisma.account.create({
+    data: {
+      id: `account-${randomBytes(8).toString("hex")}`,
+      accountId: userId,
+      providerId: "credential",
+      userId: userId,
+      password: hashedPass,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  return newUser;
+};
+
+export const UserService = { getUsers, updateUserRole, createUser };

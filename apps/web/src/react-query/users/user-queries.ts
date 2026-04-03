@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "@/lib/axios";
 
 export const useUsers = (params: { search?: string; role?: string; page?: number; limit?: number }) => {
@@ -15,5 +15,19 @@ export const useUsers = (params: { search?: string; role?: string; page?: number
       return data;
     },
     placeholderData: (prev) => prev,
+  });
+};
+
+export const useCreateUser = (userId: string) => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (userData: any) => {
+      const { data } = await axiosInstance.post(`/users?userId=${userId}`, userData);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
   });
 };

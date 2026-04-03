@@ -41,4 +41,20 @@ const updateRole = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-export const UserController = { getAll, updateRole };
+const createUser = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.query.userId as string; // Current user ID (Admin)
+  if (!userId) {
+    throw new Error("User ID is required");
+  }
+
+  const result = await UserService.createUser(userId, req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: "User created successfully",
+    data: result,
+  });
+});
+
+export const UserController = { getAll, updateRole, createUser };

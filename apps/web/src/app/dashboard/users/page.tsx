@@ -16,6 +16,8 @@ import { Badge } from "@repo/ui/components/badge";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { format } from "date-fns";
 import { redirect } from "next/navigation";
+import { Download } from "lucide-react";
+import Link from "next/link";
 
 export default function UsersPage() {
   const { data: session } = useSession();
@@ -52,6 +54,33 @@ export default function UsersPage() {
     }
   };
 
+  const handleExportCSV = () => {
+    if (!usersData?.data || usersData.data.length === 0) return;
+    
+    // Create CSV header
+    const headers = ["ID", "Name", "Email", "Role", "Joined Date"];
+    
+    // Format rows
+    const rows = usersData.data.map((user: any) => [
+      user.id,
+      `"${user.name}"`,
+      user.email,
+      user.role,
+      format(new Date(user.createdAt), "yyyy-MM-dd")
+    ]);
+    
+    const csvContent = [headers.join(","), ...rows.map((row: any[]) => row.join(","))].join("\n");
+    
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `users_export_${format(new Date(), "yyyy-MM-dd")}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const getRoleBadge = (role: string) => {
     switch(role) {
       case "ADMIN": return <Badge variant="outline" className="bg-rose-500/10 text-rose-600 border-none">Admin</Badge>;
@@ -62,10 +91,21 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
           <p className="text-muted-foreground mt-1">Manage system access and assign roles to team members.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={handleExportCSV} disabled={isLoading || !usersData?.data?.length}>
+            <Download className="mr-2 h-4 w-4" />
+            Export CSV
+          </Button>
+          <Button asChild>
+            <Link href="/dashboard/users/create">
+              Create User
+            </Link>
+          </Button>
         </div>
       </div>
 

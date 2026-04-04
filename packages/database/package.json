@@ -7,18 +7,17 @@
     "./config": "./src/config.ts"
   },
   "scripts": {
-    "build": "prisma generate",
-    "db:migrate:deploy": "cp ../../.env.local .env && prisma migrate deploy",
-    "db:migrate:dev": "cp ../../.env.local .env && prisma migrate dev",
-    "db:push": "cp ../../.env.local .env && prisma db push",
+    "build": "prisma generate --schema=prisma/schema.prisma",
+    "db:migrate:deploy": "prisma migrate deploy --schema=prisma/schema.prisma",
+    "db:migrate:dev": "prisma migrate dev --schema=prisma/schema.prisma",
+    "db:push": "prisma db push --schema=prisma/schema.prisma",
     "db:seed": "tsx src/seed.ts",
     "dev": "tsup src/* --watch",
-    "format": "prisma format",
-    "generate": "prisma generate",
+    "format": "prisma format --schema=prisma/schema.prisma",
+    "generate": "prisma generate --schema=prisma/schema.prisma",
     "lint": "eslint . --max-warnings 0",
-    "prebuild": "pnpm run generate",
     "predev": "pnpm run generate",
-    "studio": "cp ../../.env.local .env && prisma studio"
+    "studio": "prisma studio --schema=prisma/schema.prisma"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.2.0",

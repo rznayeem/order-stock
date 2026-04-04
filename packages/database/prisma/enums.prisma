@@ -1,0 +1,46 @@
+enum Role {
+  USER
+  ADMIN
+  MANAGER
+}
+
+enum ProductStatus {
+  ACTIVE
+  OUT_OF_STOCK
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum RestockPriority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum ActivityType {
+  ORDER_CREATED
+  ORDER_UPDATED
+  ORDER_CANCELLED
+  ORDER_SHIPPED
+  ORDER_DELIVERED
+  STOCK_UPDATED
+  PRODUCT_ADDED
+  PRODUCT_UPDATED
+  PRODUCT_RESTOCKED
+  CATEGORY_CREATED
+  RESTOCK_QUEUE_ADDED
+  USER_LOGIN
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+}

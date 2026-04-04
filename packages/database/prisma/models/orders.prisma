@@ -1,0 +1,23 @@
+model Order {
+  id           String      @id @default(cuid())
+  orderNumber  Int         @default(autoincrement())
+  customerName String
+  totalPrice   Float       @default(0)
+  status       OrderStatus @default(PENDING)
+  userId       String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items        OrderItem[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  unitPrice Float
+  subtotal  Float
+}

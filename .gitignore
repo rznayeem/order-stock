@@ -1,5 +1,3 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # Dependencies
 node_modules
 .pnp
@@ -26,7 +24,7 @@ coverage
 out/
 build
 dist
-
+generated
 
 # Debug
 npm-debug.log*

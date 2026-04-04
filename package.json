@@ -6,6 +6,8 @@
   },
   "scripts": {
     "build": "turbo run build",
+    "build:api": "turbo run build --filter=@repo/api",
+    "build:web": "turbo run build --filter=@repo/web",
     "build:apps": "pnpm --filter ./apps/web --filter ./apps/api build",
     "dev:apps": "turbo run dev --filter=./apps/web --filter=./apps/api",
     "dev": "turbo run dev",

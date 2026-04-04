@@ -1,15 +1,14 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "src/vercel-handler.ts",
-      "use": "@vercel/node"
+  "functions": {
+    "src/vercel-handler.ts": {
+      "includeFiles": "../../packages/database/prisma/schema.prisma"
     }
-  ],
-  "routes": [
+  },
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "src/vercel-handler.ts"
+      "source": "/(.*)",
+      "destination": "src/vercel-handler.ts"
     }
   ]
 }

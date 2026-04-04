@@ -10,7 +10,11 @@ const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
 export const prisma = globalForPrisma.prisma || new PrismaClient({ adapter });
 
-if (ENV.node_env !== "production") {
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
+} else {
+  // In production (serverless), we still store it globally if possible, 
+  // but PrismaClient singleton is the recommended way for Vercel.
   globalForPrisma.prisma = prisma;
 }
 

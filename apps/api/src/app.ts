@@ -7,7 +7,6 @@ import router from "./app/routes";
 import globalErrorHandler from "./app/middlewares/globalErrorHandler";
 import notFound from "./app/middlewares/notFound";
 import requestLogger from "./app/middlewares/requestLogger";
-import { ENV } from "@repo/database/config";
 
 const app: Application = express();
 
@@ -30,17 +29,25 @@ app.use(cookieParser());
 app.use(requestLogger);
 
 // CORS configuration - allow Next.js app
-app.use(
-  cors({
-    origin: [ENV.better_auth_url!, "http://localhost:3000"], // Include local dev if needed
-    credentials: true,
-    methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
-  })
-);
+const corsOptions = {
+  origin: [
+    process.env.BETTER_AUTH_URL || "http://localhost:3000",
+    "https://order-stock.vercel.app", // Example production URL
+  ],
+  credentials: true,
+  methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // Handle preflight requests
 
 // Application routes
 app.use("/api/v1", router);
+
+app.get("/", (_req, res) => {
+  res.json({ message: "Order-Stock Management API is running", status: "ok" });
+});
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });

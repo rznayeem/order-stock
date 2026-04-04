@@ -2,12 +2,7 @@
   "version": 2,
   "functions": {
     "src/vercel-handler.ts": {
-      "includeFiles": [
-        "../../packages/database/package.json",
-        "../../packages/database/src/**/*.ts",
-        "../../packages/database/prisma/schema.prisma",
-        "../../packages/database/generated/**"
-      ]
+      "includeFiles": "../../packages/database/{prisma/schema.prisma,generated/**,dist/**,package.json}"
     }
   },
   "rewrites": [

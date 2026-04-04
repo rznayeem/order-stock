@@ -33,11 +33,9 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 
 interface ProductsViewProps {
   userId: string;
-  initialProducts: any;
-  initialCategories: any[];
 }
 
-export function ProductsView({ userId, initialProducts, initialCategories }: ProductsViewProps) {
+export function ProductsView({ userId }: ProductsViewProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 500);
   const [statusFilter, setStatusFilter] = useState("all");
@@ -54,8 +52,6 @@ export function ProductsView({ userId, initialProducts, initialCategories }: Pro
     categoryId: categoryFilter, 
     page, 
     limit: 10,
-    // @ts-ignore
-    initialData: page === 1 && !debouncedSearch && statusFilter === "all" && categoryFilter === "all" ? initialProducts : undefined
   });
 
   const deleteMutation = useAppMutation({
@@ -111,9 +107,7 @@ export function ProductsView({ userId, initialProducts, initialCategories }: Pro
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              {initialCategories?.map((c: any) => (
-                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-              ))}
+              {/* Categories will be populated via useCategories in the form or we can add a useCategories hook here if needed for filter */}
             </SelectContent>
           </Select>
         </div>
@@ -245,7 +239,6 @@ export function ProductsView({ userId, initialProducts, initialCategories }: Pro
             </SheetDescription>
           </SheetHeader>
           <ProductForm 
-            categories={initialCategories || []} 
             initialData={editingProduct} 
             onClose={() => setIsSheetOpen(false)} 
             userId={userId!} 

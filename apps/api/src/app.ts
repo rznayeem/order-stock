@@ -31,8 +31,8 @@ app.use(requestLogger);
 // CORS configuration - allow Next.js app
 const corsOptions = {
   origin: [
-    process.env.BETTER_AUTH_SECRET || "http://localhost:3000",
-    "https://order-stock-web.vercel.app", // Example production URL
+    process.env.BETTER_AUTH_URL || "http://localhost:3000",
+    "https://order-stock.vercel.app", // Example production URL
   ],
   credentials: true,
   methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],

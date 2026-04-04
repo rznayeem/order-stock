@@ -29,10 +29,13 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(requestLogger);
 
-// CORS configuration - allow Next.js app
+const corsOrigins =
+  ENV.cors_origins?.length ? ENV.cors_origins
+  : [ENV.better_auth_url, "http://localhost:3000"].filter((o): o is string => Boolean(o));
+
 app.use(
   cors({
-    origin: [ENV.better_auth_url!, "http://localhost:3000"], // Include local dev if needed
+    origin: corsOrigins,
     credentials: true,
     methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Cookie"],

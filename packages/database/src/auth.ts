@@ -3,9 +3,14 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { ENV } from "./config";
 import { prisma } from "./prisma";
 
+const trustedOrigins =
+  ENV.better_auth_trusted_origins?.length ?
+    ENV.better_auth_trusted_origins
+  : [ENV.better_auth_url!];
+
 export const auth = betterAuth({
   baseURL: ENV.better_auth_url!,
-  trustedOrigins: [ENV.better_auth_url!],
+  trustedOrigins,
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,

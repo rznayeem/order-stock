@@ -4,19 +4,24 @@ import app from "./app";
 import { prisma } from "@repo/database";
 import { ENV } from "@repo/database/config";
 
-let server: Server;
+let server: Server | undefined;
 
-async function main() {
+/** Vercel runs Express as a single serverless function; do not bind a port or exit the process on boot. */
+const isVercel = process.env.VERCEL === "1";
+
+async function startLocalServer() {
   try {
     console.log(chalk.blueBright("🔌 Connecting to Prisma..."));
     await prisma.$connect();
     console.log(chalk.greenBright("✅ Prisma connected successfully"));
 
-    server = app.listen(ENV.server_port!, () => {
+    const port = Number(ENV.server_port ?? process.env.PORT ?? 4000);
+
+    server = app.listen(port, () => {
       console.log(
         chalk.bold.green("🚀 API is running"),
         chalk.gray("→"),
-        chalk.cyan(`http://localhost:${ENV.server_port}`)
+        chalk.cyan(`http://localhost:${port}`)
       );
     });
   } catch (error) {
@@ -25,7 +30,9 @@ async function main() {
   }
 }
 
-main();
+if (!isVercel) {
+  void startLocalServer();
+}
 
 async function shutdown(signal: string) {
   console.log(chalk.yellowBright(`⚠️ ${signal} received`), chalk.gray("— shutting down gracefully..."));
@@ -46,15 +53,19 @@ async function shutdown(signal: string) {
   }
 }
 
-process.on("unhandledRejection", (err) => {
-  console.error(chalk.redBright("😈 Unhandled Rejection detected"), err);
-  shutdown("unhandledRejection");
-});
+if (!isVercel) {
+  process.on("unhandledRejection", (err) => {
+    console.error(chalk.redBright("😈 Unhandled Rejection detected"), err);
+    void shutdown("unhandledRejection");
+  });
 
-process.on("uncaughtException", (err) => {
-  console.error(chalk.redBright("😈 Uncaught Exception detected"), err);
-  process.exit(1);
-});
+  process.on("uncaughtException", (err) => {
+    console.error(chalk.redBright("😈 Uncaught Exception detected"), err);
+    process.exit(1);
+  });
 
-process.on("SIGTERM", () => shutdown("SIGTERM"));
-process.on("SIGINT", () => shutdown("SIGINT"));
+  process.on("SIGTERM", () => void shutdown("SIGTERM"));
+  process.on("SIGINT", () => void shutdown("SIGINT"));
+}
+
+export default app;

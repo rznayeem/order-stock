@@ -159,10 +159,12 @@ cp .env.example .env.local
 ```env
 DATABASE_URL=postgresql://user:password@host:5432/orderstock
 DIRECT_URL=postgresql://user:password@host:5432/orderstock
-SERVER_PORT=5000
+SERVER_PORT=4000
 BETTER_AUTH_URL=http://localhost:3000
 BETTER_AUTH_SECRET=your-secret-key-here
 ```
+
+Optional: `NEXT_PUBLIC_BETTER_AUTH_URL` and `NEXT_PUBLIC_API_URL` (set in production — see Deployment).
 
 ### 4. Setup Database
 
@@ -183,7 +185,7 @@ pnpm db:seed
 pnpm dev
 ```
 
-This starts both the **frontend** (http://localhost:3000) and **API** (http://localhost:5000) simultaneously.
+This starts both the **frontend** (http://localhost:3000) and **API** (http://localhost:4000 by default from `.env.example`) simultaneously.
 
 ### Demo Login
 
@@ -195,19 +197,56 @@ Use the **"Use Demo Credentials"** button on the login page, or enter:
 
 ## 🌐 Deployment
 
-### Frontend (Vercel)
+This repo is a **Turborepo** (`pnpm` workspaces). Deploy the **web** and **API** as **two separate Vercel projects** from the same GitHub repository.
 
-1. Connect your GitHub repo to Vercel
-2. Set framework to **Next.js**
-3. Add environment variables
-4. Deploy
+### 1. Project: `order-stock` (Next.js — `apps/web`)
 
-### Backend (Railway / Render)
+1. **Import** the repo in Vercel → **Add New** → **Project** → select the repo.
+2. **Root Directory**: `apps/web` (click **Edit** on the detected root).
+3. **Framework Preset**: Next.js (auto).
+4. **Build & Install**: the committed `apps/web/vercel.json` runs `pnpm install` from the monorepo root and `pnpm turbo run build --filter=@repo/web...` so workspace packages (`@repo/ui`, `@repo/database`, etc.) resolve correctly.
+5. **Environment variables** (Vercel → Project → Settings → Environment Variables):
 
-1. Create a new service pointing to `apps/api`
-2. Set build command: `pnpm build --filter=api`
-3. Set start command: `node apps/api/dist/server.js`
-4. Add environment variables
+| Variable | Value |
+| --- | --- |
+| `NEXT_PUBLIC_BETTER_AUTH_URL` | Your deployed **frontend** URL, e.g. `https://order-stock.vercel.app` (no trailing slash). Must match what you use for `BETTER_AUTH_URL` on the API. |
+| `NEXT_PUBLIC_API_URL` | Your deployed **API** URL, e.g. `https://order-stock-server.vercel.app` (no trailing slash). |
+| `DATABASE_URL` | Same PostgreSQL URL as the API (needed for Prisma / server code in `@repo/database`). |
+| `DIRECT_URL` | Same as local (often the non-pooler/direct string for migrations). |
+| `BETTER_AUTH_SECRET` | Same long random string as on the API project. |
+| `BETTER_AUTH_URL` | Same as `NEXT_PUBLIC_BETTER_AUTH_URL` (server-side auth in Next). |
+
+Redeploy after changing env vars.
+
+### 2. Project: `order-stock-server` (Express — `apps/api`)
+
+1. **Add** another project from the **same** repository.
+2. **Root Directory**: `apps/api`.
+3. **Framework Preset**: Other or **Express** (Vercel supports [Express](https://vercel.com/docs/frameworks/backend/express) with `src/server.ts` exporting the app).
+4. **Build & Install**: `apps/api/vercel.json` installs from the repo root and runs `pnpm turbo run build --filter=@repo/api...` (Prisma generate + API TypeScript build).
+5. **Environment variables**:
+
+| Variable | Value |
+| --- | --- |
+| `DATABASE_URL` | Production PostgreSQL connection string. |
+| `DIRECT_URL` | Direct connection string (if you use it for migrations). |
+| `BETTER_AUTH_URL` | **Public URL of the Next.js app** (not the API), e.g. `https://order-stock.vercel.app`. |
+| `BETTER_AUTH_SECRET` | Same value as on the web project. |
+| `CORS_ORIGINS` | Optional comma-separated list; if omitted, CORS uses `BETTER_AUTH_URL` and `http://localhost:3000`. In production include your frontend origin, e.g. `https://order-stock.vercel.app`. |
+| `BETTER_AUTH_TRUSTED_ORIGINS` | Optional; comma-separated origins for Better Auth cookies (e.g. preview URLs). |
+
+Do **not** rely on a repo-root `.env.local` on Vercel — set variables in the dashboard for each project.
+
+### Why the API used to crash on Vercel
+
+Vercel runs Express as **serverless functions**, not a long-lived `node server.js` process. The API must **export the Express `app` as the default export** from `src/server.ts` and must not call `process.exit` or bind a port when `VERCEL=1`. The app also needs valid `DATABASE_URL` and auth-related env vars; missing values caused Prisma or auth to fail at startup.
+
+### Backend on Railway / Render (alternative)
+
+1. Point the service at `apps/api`.
+2. Build: `pnpm turbo run build --filter=@repo/api...` (from repo root).
+3. Start: `node apps/api/dist/server.js` (after build).
+4. Set the same env vars as above (except Vercel-specific behavior).
 
 ---
 

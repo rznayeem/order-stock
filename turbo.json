@@ -1,6 +1,19 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "ui": "tui",
+  "globalEnv": [
+    "DATABASE_URL",
+    "DIRECT_URL",
+    "NODE_ENV",
+    "SERVER_PORT",
+    "BETTER_AUTH_URL",
+    "BETTER_AUTH_SECRET",
+    "BETTER_AUTH_TRUSTED_ORIGINS",
+    "CORS_ORIGINS",
+    "NEXT_PUBLIC_API_URL",
+    "NEXT_PUBLIC_BETTER_AUTH_URL",
+    "VERCEL"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build", "^generate"],

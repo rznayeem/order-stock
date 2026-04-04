@@ -30,13 +30,16 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     errorSources = [{ path: "", message: err.message }];
   }
 
+  // In production, don't leak internal error details for unknown errors
+  const isDevelopment = ENV.node_env === "development";
+  
   return res.status(statusCode).json({
     success: false,
-    message,
+    message: statusCode === 500 && !isDevelopment ? "Internal Server Error" : message,
     errorSources,
-    err,
-    stack: ENV.node_env === "development" ? err?.stack : null,
+    stack: isDevelopment ? err?.stack : null,
   });
 };
 
 export default globalErrorHandler;
+

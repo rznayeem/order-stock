@@ -6,6 +6,7 @@ import { RestockRoutes } from "../modules/RestockQueue/restock.route";
 import { DashboardRoutes } from "../modules/Dashboard/dashboard.route";
 import { ActivityRoutes } from "../modules/ActivityLog/activity.route";
 import { UserRoutes } from "../modules/User/user.route";
+import authMiddleware from "../middlewares/authMiddleware";
 
 const router: Router = Router();
 
@@ -19,6 +20,8 @@ const moduleRoutes = [
   { path: "/users", route: UserRoutes },
 ];
 
-moduleRoutes.forEach((route) => router.use(route.path, route.route));
+// Apply authMiddleware globally to all protected module routes
+moduleRoutes.forEach((route) => router.use(route.path, authMiddleware(), route.route));
 
 export default router;
+

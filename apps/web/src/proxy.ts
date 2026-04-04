@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+
 export default async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
   
@@ -11,14 +12,17 @@ export default async function proxy(request: NextRequest) {
     request.cookies.has("order_stock.session_token") || 
     request.cookies.has("__Secure-order_stock.session_token");
 
+  // Redirect authenticated users away from auth pages
   if (isAuthPage && hasSession) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
+  // Redirect unauthenticated users from protected dashboard routes
   if (isDashboardPage && !hasSession) {
     return NextResponse.redirect(new URL("/auth/login", request.url));
   }
 
+  // Auto-redirect root to dashboard
   if (path === "/") {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
@@ -29,3 +33,4 @@ export default async function proxy(request: NextRequest) {
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
+

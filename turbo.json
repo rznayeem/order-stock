@@ -7,6 +7,8 @@
       "env": [
         "NODE_ENV",
         "DATABASE_URL",
+        "DIRECT_URL",
+        "SERVER_PORT",
         "BETTER_AUTH_SECRET",
         "BETTER_AUTH_URL",
         "NEXT_PUBLIC_API_URL"
@@ -26,6 +28,11 @@
     },
     "generate": {
       "dependsOn": ["^generate"],
+      "env": [
+        "DATABASE_URL",
+        "DIRECT_URL",
+        "NODE_ENV"
+      ],
       "cache": false
     },
     "db:push": {

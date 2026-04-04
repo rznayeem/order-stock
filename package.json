@@ -17,7 +17,10 @@
     "db:migrate:dev": "turbo run db:migrate:dev",
     "db:push": "turbo run db:push",
     "db:seed": "turbo run db:seed",
-    "generate": "turbo run generate"
+    "generate": "turbo run generate",
+    "deploy:web": "vercel ./apps/web --prod",
+    "deploy:api": "vercel ./apps/api --prod",
+    "deploy:all": "pnpm deploy:api && pnpm deploy:web"
   },
   "devDependencies": {
     "prettier": "^3.7.4",

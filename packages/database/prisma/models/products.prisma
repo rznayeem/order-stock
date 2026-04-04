@@ -1,0 +1,16 @@
+model Product {
+  id                String        @id @default(cuid())
+  name              String
+  categoryId        String
+  category          Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  price             Float
+  stockQuantity     Int           @default(0)
+  minStockThreshold Int           @default(5)
+  status            ProductStatus @default(ACTIVE)
+  userId            String
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderItems        OrderItem[]
+  restockQueue      RestockQueue?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}

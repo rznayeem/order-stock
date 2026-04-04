@@ -209,14 +209,18 @@ This repo is a **Turborepo** (`pnpm` workspaces). Deploy the **web** and **API**
 
 | Variable | Value |
 | --- | --- |
-| `NEXT_PUBLIC_BETTER_AUTH_URL` | Your deployed **frontend** URL, e.g. `https://order-stock.vercel.app` (no trailing slash). Must match what you use for `BETTER_AUTH_URL` on the API. |
-| `NEXT_PUBLIC_API_URL` | Your deployed **API** URL, e.g. `https://order-stock-server.vercel.app` (no trailing slash). |
+| `API_PROXY_TARGET` | **Required.** Your Express deployment URL, e.g. `https://order-stock-server.vercel.app` (no trailing slash). The Next.js app proxies `/api/v1/*` to this URL **server-side** and forwards cookies so Better Auth sessions work. Do **not** set `NEXT_PUBLIC_API_URL` to the API host in production (that would call the API from the browser without session cookies). |
+| `NEXT_PUBLIC_BETTER_AUTH_URL` | Your deployed **frontend** URL, e.g. `https://order-stock.vercel.app` (no trailing slash). Same as `BETTER_AUTH_URL` / API `BETTER_AUTH_URL`. |
 | `DATABASE_URL` | Same PostgreSQL URL as the API (needed for Prisma / server code in `@repo/database`). |
 | `DIRECT_URL` | Same as local (often the non-pooler/direct string for migrations). |
 | `BETTER_AUTH_SECRET` | Same long random string as on the API project. |
 | `BETTER_AUTH_URL` | Same as `NEXT_PUBLIC_BETTER_AUTH_URL` (server-side auth in Next). |
 
+Optional: `NEXT_PUBLIC_API_URL` — only for local development if you point the browser straight at `http://localhost:4000`; leave unset on Vercel so the client uses same-origin `/api/v1` and the proxy.
+
 Redeploy after changing env vars.
+
+**Why a proxy:** Session cookies are set for `order-stock.vercel.app`. The browser does **not** send them to `order-stock-server.vercel.app` (different site), so the Express `auth` middleware never sees a session and data requests fail. Same-origin `/api/v1` on the frontend fixes this by letting Next forward the `Cookie` header to Express.
 
 ### 2. Project: `order-stock-server` (Express — `apps/api`)
 

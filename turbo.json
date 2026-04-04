@@ -12,6 +12,7 @@
     "CORS_ORIGINS",
     "NEXT_PUBLIC_API_URL",
     "NEXT_PUBLIC_BETTER_AUTH_URL",
+    "API_PROXY_TARGET",
     "VERCEL"
   ],
   "tasks": {

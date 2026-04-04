@@ -2,7 +2,8 @@ import { headers } from "next/headers";
 import { auth } from "@repo/database";
 import { redirect } from "next/navigation";
 import { ProductsView } from "@/components/products/ProductsView";
-import { prisma } from "@repo/database";
+import { HydrationBoundary } from "@tanstack/react-query";
+import { getDehydratedState } from "@/lib/query-prefetch";
 
 export default async function ProductsPage() {
   const session = await auth.api.getSession({
@@ -18,46 +19,15 @@ export default async function ProductsPage() {
     redirect("/dashboard");
   }
 
-  // Fetch initial data on the server for faster initial load (LCP)
-  const [initialProducts, initialCategories] = await Promise.all([
-    prisma.product.findMany({
-      where: {
-        userId: session.user.id,
-      },
-      include: {
-        category: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: 10,
-    }),
-    prisma.category.findMany({
-      where: {
-        userId: session.user.id,
-      },
-    }),
-  ]);
-
-  // Sanitize data for the client (Prisma objects might have dates that need serialization)
-  const serializedProducts = JSON.parse(JSON.stringify(initialProducts));
-  const serializedCategories = JSON.parse(JSON.stringify(initialCategories));
-
-  const initialData = {
-    data: serializedProducts,
-    meta: {
-      total: await prisma.product.count({ where: { userId: session.user.id } }),
-      page: 1,
-      limit: 10,
-      totalPage: Math.ceil((await prisma.product.count({ where: { userId: session.user.id } })) / 10),
-    }
-  };
+  // Professional Hydration: Pre-populate the React Query cache on the server
+  const prefetch = await getDehydratedState(session.user.id);
+  // We prefetch both products and categories for the products page
+  await prefetch.prefetchProducts(10);
+  const dehydratedState = await prefetch.prefetchCategories();
 
   return (
-    <ProductsView 
-      userId={session.user.id} 
-      initialProducts={initialData} 
-      initialCategories={serializedCategories} 
-    />
+    <HydrationBoundary state={dehydratedState}>
+      <ProductsView userId={session.user.id} />
+    </HydrationBoundary>
   );
 }

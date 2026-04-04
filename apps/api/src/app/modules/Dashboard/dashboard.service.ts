@@ -27,7 +27,7 @@ const getDashboardStats = async (userId: string) => {
 
   // Calculate low stock count manually (Prisma raw comparison isn't ideal)
   const allProducts = await prisma.product.findMany({ where: { userId }, select: { stockQuantity: true, minStockThreshold: true } });
-  const actualLowStock = allProducts.filter((p) => p.stockQuantity <= p.minStockThreshold).length;
+  const actualLowStock = allProducts.filter((p: { stockQuantity: number; minStockThreshold: number }) => p.stockQuantity <= p.minStockThreshold).length;
 
   // Get order chart data (last 7 days)
   const chartData = [];

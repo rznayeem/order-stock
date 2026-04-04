@@ -7,7 +7,6 @@ import router from "./app/routes";
 import globalErrorHandler from "./app/middlewares/globalErrorHandler";
 import notFound from "./app/middlewares/notFound";
 import requestLogger from "./app/middlewares/requestLogger";
-import { ENV } from "@repo/database/config";
 
 const app: Application = express();
 
@@ -32,7 +31,7 @@ app.use(requestLogger);
 // CORS configuration - allow Next.js app
 app.use(
   cors({
-    origin: [ENV.better_auth_url!, "http://localhost:3000"], // Include local dev if needed
+    origin: ["https://order-stock-server.vercel.app", "http://localhost:3000"], // Include local dev if needed
     credentials: true,
     methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Cookie"],

@@ -9,6 +9,7 @@ import { Label } from "@repo/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@repo/ui/components/select";
 import { useAppMutation } from "@/hooks/useAppMutation";
 import axiosInstance from "@/lib/axios";
+import { useCategories } from "@/react-query/categories/category-queries";
 
 const productSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -18,7 +19,8 @@ const productSchema = z.object({
   minStockThreshold: z.coerce.number().int().min(1, "Threshold must be at least 1"),
 });
 
-export function ProductForm({ categories, initialData, onClose, userId }: { categories: any[], initialData?: any, onClose: () => void, userId: string }) {
+export function ProductForm({ initialData, onClose, userId }: { initialData?: any, onClose: () => void, userId: string }) {
+  const { data: categories = [] } = useCategories(userId);
   const form = useForm({
     resolver: zodResolver(productSchema),
     defaultValues: {
@@ -67,7 +69,7 @@ export function ProductForm({ categories, initialData, onClose, userId }: { cate
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
-              {categories.map((c) => (
+              {categories.map((c: any) => (
                 <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
               ))}
             </SelectContent>
